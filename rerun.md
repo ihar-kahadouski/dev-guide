@@ -37,7 +37,7 @@ To start launch rerun set `rp.rerun=true` and `rp.rerun.of=launch_uuid` in `repo
 
 ## Test Items
 
-## Container types (has children)
+### Container types (has children)
 
 System tries to find item with the same name, set of parameters and under the same path. If such item found, system updates the following attributes:
 
@@ -47,9 +47,11 @@ System tries to find item with the same name, set of parameters and under the sa
  
 If not - new item will be created.
 
-## Step types (without children)
+### Step types (without children)
 
 System tries to find item with the same name, set of parameters and under the same path. If such item found, retry created. If not - new item will be created.
+
+You can try to rerun launch [here](https://github.com/reportportal/examples-java)
 
 
 
