@@ -10,15 +10,21 @@
 ## What is rerun
 
 Let's imagine we have some set of tests:
+
 ![](images/rerun/tests.png)
 
 After run we can see few failed items:
+
 ![](images/rerun/launch_filed_1.png)
+
 ![](images/rerun/launch_failed_rp_1.png)
 
 We are fixing issues and want to launch tests again. But running all the tests can take a lot of time. So it would be better to run only failed tests from previous launch.
+
 Now we have the following:
+
 ![](images/rerun/launch_failed_2.png)
+
 ![](images/rerun/launch_failed_rp_2.png)
 
 So what do we have here? Two launches with the same test that was just be started again, but they are have difference in passed and failed items. And it is hard to find which test was fixed and which was not.
