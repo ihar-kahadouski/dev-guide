@@ -27,11 +27,11 @@ Now we have the following:
 
 ![](images/rerun/launch_failed_rp_2.png)
 
-So what do we have here? Two launches with the same test that was just be started again, but they are have difference in passed and failed items. And it is hard to find which test was fixed and which was not.
+So what do we have here? Two launches with the same tests that was just be started again, but they are have difference in passed and failed items. And it is hard to find which test was fixed and which was not.
 
 The main idea of reruns is to restart the same launch and trace changes between them not creating new launch every time.
 
-Let's try to report the same launches using retries.
+Let's try to report the same launches using rerun.
 
 ![](images/rerun/rp_rerun_1.png)
 
@@ -45,7 +45,7 @@ On the step view we can see that items with names `getActivitiesForProject`, `ge
 
 ### Latest launch
 
-To start launch rerun set `rp.rerun=true` in `reportportal.properties` file. In case properties file contains the value, client send request with object `"rerun": true`:
+To start launch rerun add `rp.rerun=true` to `reportportal.properties` file. No need to change anything else(name, project, etc.). In case properties file contains the value, client send request with object `"rerun": true`:
 ```json
 {
     "name": "launch_name",
@@ -76,6 +76,16 @@ If system cannot find launch with the same name system throws error with `404` c
 
 To start launch rerun set `rp.rerun=true` and `rp.rerun.of=launch_uuid` in `reportportal.properties` file where `launch_uuid` uuid of launch that have to be reruned.
 
+```properties
+rp.endpoint=http://example.reportportal.com
+rp.uuid=ff7ca7f1-4bb8-4e6c-807a-b296b236f7cf
+rp.launch=rerun_example_launch
+rp.project=super_project
+rp.rerun=true
+rp.rerun.of=6590da5d-0121-402a-ab73-be3d886f6e47
+```
+Where `6590da5d-0121-402a-ab73-be3d886f6e47` is uuid of desired launch.
+
 ## Test Items behavior
 
 ### Container types (has children)
@@ -90,7 +100,7 @@ If not - new item will be created.
 
 ### Step types (without children)
 
-System tries to find item with the same name, set of parameters and under the same path. If such item found, retry created. If not - new item will be created.
+System tries to find item with the same name, set of parameters and under the same path. If such item found, retry of the item created. If not - new item will be created.
 
 ## Example
 
