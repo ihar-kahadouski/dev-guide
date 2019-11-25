@@ -120,7 +120,7 @@ Start test item request model contains the following attributes:
 | codeRef     | No       | Physical location of test item                                                                                                                                                                                                                      | empty          | com.rpproject.tests.LoggingTests                                                                                                                                     |
 | parameters  | No       | Set of parameters (for parametrized tests)                                                                                                                                                                                                          | empty          | logger:logback                                                                                                                                                       |
 | uniqueId    | No       |                                                                                                                                                                                                                                                     | auto generated | auto:cd5a6c616d412b6739738951c922377f                                                                                                                                |
-| retry       | No       | Uses to report retry of test. Allowable values: 'true' or 'false'                                                                                                                                                                                   | false          | false                                                                                                                                                                |
+| retry       | No       | Used to report retry of test. Allowable values: 'true' or 'false'                                                                                                                                                                                   | false          | false                                                                                                                                                                |
 | hasStats    | No       |                                                                                                                                                                                                                                                     | true           | true                                                                                                                                                                 |
 
 Start test item response contains the following attributes:
@@ -160,6 +160,227 @@ And in the response we get `id` of created test item:
 ```
 
 Also we should save it to report child items under this one
+
+## Start child(container) item
+
+Next test item will be child for suite test item and it also will be parent for few step items.
+It will be container item.
+To start child item we need know launch UUID and parent test item UUID.
+We should call the following endpoint:
+POST `/api/{version}/{projectName}/item/{parentItemUuid}`
+
+Request and response model the same as for parent item.
+
+Full request:
+
+```shell script
+curl --header "Content-Type: application/json" \
+     --header "Authorization: Bearer 039eda00-b397-4a6b-bab1-b1a9a90376d1" \
+     --request POST \
+     --data 'body' \
+     http://rp.com/api/v1/rp_project/item/1e183148-c79f-493a-a615-2c9a888cb441
+```
+
+Where body is:
+
+```json
+{
+  "name": "PluginServiceTest",
+  "startTime": "1574423236000",
+  "type": "test",
+  "launchUuid": "96d1bc02-6a3f-451e-b706-719149d51ce4",
+  "description": "Plugin tests"
+}
+```
+
+And we have a response:
+
+```json
+{
+  "id": "bb237b98-22b0-4289-9490-9bb29215fe5e"
+}
+```
+
+## Start step item
+
+Now we are going to start another final test item in our structure.
+
+```shell script
+curl --header "Content-Type: application/json" \
+     --header "Authorization: Bearer 039eda00-b397-4a6b-bab1-b1a9a90376d1" \
+     --request POST \
+     --data 'body' \
+     http://rp.com/api/v1/rp_project/item/bb237b98-22b0-4289-9490-9bb29215fe5e
+```
+
+With body:
+
+```json
+{
+  "name": "uploadPlugin",
+  "startTime": "1574423237000",
+  "type": "step",
+  "launchUuid": "96d1bc02-6a3f-451e-b706-719149d51ce4",
+  "description": "Uploading plugin"
+}
+```
+
+And response:
+
+```json
+{
+  "id": "22e55c62-d028-4b49-840f-195d7a48b114"
+}
+```
+
+## Finish child item
+
+We are not going to report more test items under this one, so we can finish it.
+To do that we should send the following request:
+PUT `/api/{version}/{projectName}/item/{itemUuid}`
+
+Finish test item request model:
+
+| Attribute   | Required | Description                                                                                               | Default value | Example                                                                                                                                                              |
+|-------------|----------|-----------------------------------------------------------------------------------------------------------|---------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| endTime     | Yes      | Test item end time                                                                                        | -             | 2019-11-22T11:47:01+00:00 (ISO 8601) Fri, 22 Nov 2019 11:47:01 +0000 (RFC 822, 1036, 1123, 2822) 2019-11-22T11:47:01+00:00 (RFC 3339) 1574423221000 (Unix Timestamp) |
+| launchUuid  | Yes      | Parent launch UUID                                                                                        | -             | 48ecc273-032f-44d4-822a-66e494e9b1e8                                                                                                                                 |
+| status      | No       | Test item status. Allowable values: "passed", "failed", "stopped", "skipped", "interrupted", "cancelled". | -             | failed                                                                                                                                                               |
+| description | No       | Test item description. Overrides description from start request.                                          | empty         | Test item description on finish                                                                                                                                      |
+| attributes  | No       | Test item attributes(tags). Pairs of key and value                                                        | empty         | most failed os:android                                                                                                                                               |
+| retry       | No       | Used to report retry of test. Allowable values: 'true' or 'false'                                         | false         | false                                                                                                                                                                |
+| issue       | No       | Issue of current test item                                                                                | empty         | Will be described below in separate table                                                                                                                            |
+
+Issue part for finish test item model:
+
+| Attribute            | Required | Description                                                                                                 | Default value | Example                                   |
+|----------------------|----------|-------------------------------------------------------------------------------------------------------------|---------------|-------------------------------------------|
+| issueType            | Yes      | Issue type locator. Allowable values: "pb***", "ab***", "si***", "ti***", "nd001". Where *** is locator id. | -             | pb001                                     |
+| comment              | No       | Issue commnet                                                                                               | empty         | Framework issue. Script outdated          |
+| autoAnalyzed         | No       | Is issue was submitted by auto analyzer                                                                     | false         | false                                     |
+| ignoreAnalyzer       | No       | Is issue should be ignored during auto analysis                                                             | false         | false                                     |
+| externalSystemIssues | No       | Set of external system issues                                                                               | empty         | Will be described in separate table below |
+
+External system issue: 
+
+| Attribute  | Required | Description                            | Default value | Example                     |
+|------------|----------|----------------------------------------|---------------|-----------------------------|
+| ticketId   | No       | Id of ticket in external system        | empty         | ABCD1234                    |
+| submitDate | No       | Ticket submit date as timestamp        | empty         | 1574696194000               |
+| brsUrl     | No       | URL of external system                 | empty         | http://example.com          |
+| btsProject | No       | Project name in external system        | empty         | ABCD                        |
+| url        | No       | URL of ticket in external system issue | empty         | http://example.com/ABCD1234 |
+
+If item finished successfully in the response will be message with item uuid.
+
+Full request:
+
+ ```shell script
+curl --header "Content-Type: application/json" \
+     --header "Authorization: Bearer 039eda00-b397-4a6b-bab1-b1a9a90376d1" \
+     --request PUT \
+     --data 'body' \
+     http://rp.com/api/v1/rp_project/item/22e55c62-d028-4b49-840f-195d7a48b114
+```
+
+With body: 
+
+```json
+{
+  "endTime": "1574423239000",
+  "status": "failed",
+  "launchUuid": "96d1bc02-6a3f-451e-b706-719149d51ce4",
+  "issue": {
+    "issueType": "pb001",
+    "comment": "Some critical issue"    
+  }
+}
+```
+
+We can report other child items (`updatePlugin`, `removePlugin`) the same way as described above.
+
+## Finish parent(container) item
+
+After that we should finish their parent item.
+We can do it the same way as for child items.
+
+```shell script
+curl --header "Content-Type: application/json" \
+     --header "Authorization: Bearer 039eda00-b397-4a6b-bab1-b1a9a90376d1" \
+     --request PUT \
+     --data 'body' \
+     http://rp.com/api/v1/rp_project/item/bb237b98-22b0-4289-9490-9bb29215fe5e
+```
+
+With body: 
+
+```json
+{
+  "endTime": "1574423241000",
+  "launchUuid": "96d1bc02-6a3f-451e-b706-719149d51ce4"
+}
+```
+
+## Save log without attachment
+
+We can save logs for test items.
+For example let's try to save log for `uploadPlugin` test item.
+It is not necessary to save log when test item already finished.
+We can create log for test item with `in_progress` status.
+
+Common endpoint: POST `/api/{version}/{projectName}/log`
+
+And it has the following request model:
+
+| Attribute  | Required | Description                                                                                                                  | Default value | Example                                                                                                                                                                |
+|------------|----------|------------------------------------------------------------------------------------------------------------------------------|---------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| launchUuid | Yes      | Launch UUID                                                                                                                  | -             | e80b62e1-b297-47a0-be22-5a4a25920c0a                                                                                                                                   |
+| time       | Yes      | Log time                                                                                                                     | -             | 2019-11-22T11:47:01+00:00 (ISO 8601) Fri, 22 Nov 2019 11:47:01 +0000 (RFC 822, 1036, 1123, 2822)  2019-11-22T11:47:01+00:00 (RFC 3339)  1574423221000 (Unix Timestamp) |
+| itemUuid   | No       | Test item UUID                                                                                                               | empty         | fb2a012f-5996-45a0-b3bb-d8210b4fb980                                                                                                                                   |
+| message    | No       | Log message                                                                                                                  | empty         | [Forwarding findElement on session 477bee808ca0c415a7aae2de2edc5cc9 to remote] DEBUG o.a.h.c.protocol.RequestAddCookies - CookieSpec selected: default                 |
+| level      | No       | Log level. Allowable values: error(40000), warn(30000), info(20000), debug(10000), trace(5000), fatal(50000), unknown(60000) | ?             | error                                                                                                                                                                  |
+
+Response model: 
+
+| Attribute | Required | Example                              |
+|-----------|----------|--------------------------------------|
+| id        | Yes      | 43f80000-7ca8-4fed-9da3-0759867a847c |
+
+Full request:
+
+```shell script
+curl --header "Content-Type: application/json" \
+     --header "Authorization: Bearer 039eda00-b397-4a6b-bab1-b1a9a90376d1" \
+     --request POST \
+     --data 'body' \
+     http://rp.com/api/v1/rp_project/log
+```
+
+Where body is:
+
+```json
+{
+  "launchUuid": "96d1bc02-6a3f-451e-b706-719149d51ce4",
+  "itemUuid": "22e55c62-d028-4b49-840f-195d7a48b114",
+  "time": "1574423245000",
+  "message": "An error occurred while connecting to the server [Nested exception is java.lang.NoClassDefFoundError]",
+  "level": "error"
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
