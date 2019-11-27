@@ -218,7 +218,7 @@ Java client has static methods for launch log reporting:
 - [emitLaunchLog(Function<String, SaveLogRQ> logSupplier)](https://github.com/reportportal/client-java/blob/20b1dda7681301acd86d2d9c9dbcbd7991890cdc/src/main/java/com/epam/reportportal/service/ReportPortal.java#L160)
 - [emitLaunchLog(final String message, final String level, final Date time)](https://github.com/reportportal/client-java/blob/20b1dda7681301acd86d2d9c9dbcbd7991890cdc/src/main/java/com/epam/reportportal/service/ReportPortal.java#L192)
 - [emitLaunchLog(final String message, final String level, final Date time, final File file)](https://github.com/reportportal/client-java/blob/20b1dda7681301acd86d2d9c9dbcbd7991890cdc/src/main/java/com/epam/reportportal/service/ReportPortal.java#L233)
-[emitLaunchLog(final ReportPortalMessage message, final String level, final Date time)](https://github.com/reportportal/client-java/blob/20b1dda7681301acd86d2d9c9dbcbd7991890cdc/src/main/java/com/epam/reportportal/service/ReportPortal.java#L288)
+- [emitLaunchLog(final ReportPortalMessage message, final String level, final Date time)](https://github.com/reportportal/client-java/blob/20b1dda7681301acd86d2d9c9dbcbd7991890cdc/src/main/java/com/epam/reportportal/service/ReportPortal.java#L288)
 
 
 

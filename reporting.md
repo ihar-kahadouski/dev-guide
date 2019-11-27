@@ -1,6 +1,19 @@
 # Reporting developers guide
 
-## Oveview
+1. [Preconditions](#preconditions)
+1. [Start launch](#start-launch)
+1. [Start root(suite) item](#start-rootsuite-item)
+1. [Start child(container) item](#start-childcontainer-item)
+1. [Start child(step) item](#start-childstep-item)
+1. [Finish child item](#finish-child-item)
+1. [Finish parent(container) item](#finish-parentcontainer-item)
+1. [Save single log without attachment](#save-single-log-without-attachment)
+1. [Batch save logs](#batch-save-logs)
+1. [Save launch log](#save-launch-log)
+1. [Finish root(suite) item](#finish-rootsuite-item)
+1. [Finish launch](#finish-launch)
+
+## Preconditions
 
 Let's imagine we have the following tests structure:
 
@@ -14,9 +27,9 @@ Let's imagine we have the following tests structure:
         (Step) createUser
         (Step) updateUser
         (Step) deleteUser
-``` 
+```
 
-So our goal is run the test and send results to Report Portal.
+So our goal is run the tests and send results to Report Portal.
 We can interact with Report Portal API instance trough HTTP requests.
 
 The main flow is set of HTTP requests:
@@ -27,8 +40,6 @@ The main flow is set of HTTP requests:
 5. Finish launch
 
 Steps 2-4 should execute for each test item in structure.
-
-## Preconditions 
 
 Let's assume that our Report Portal instance deployed at `http://rp.com`.
 And we have api key `039eda00-b397-4a6b-bab1-b1a9a90376d1`. You can find it in profile (`http://rp.com/ui/#user-profile`).
@@ -100,7 +111,7 @@ In the response we can see `id` and `number` if launch started successfully or a
 ```
 Value of `id` field should save somewhere. It will be used later to report test items.
 
-## Start suite(root) item
+## Start root(suite) item
 
 Now we have created launch and can report items under it.
 To start root item you should send request to the following endpoint:
@@ -201,7 +212,7 @@ And we have a response:
 }
 ```
 
-## Start step item
+## Start child(step) item
 
 Now we are going to start another final test item in our structure.
 
@@ -247,7 +258,7 @@ Finish test item request model:
 | launchUuid  | Yes      | Parent launch UUID                                                                                        | -             | 48ecc273-032f-44d4-822a-66e494e9b1e8                                                                                                                                 |
 | status      | No       | Test item status. Allowable values: "passed", "failed", "stopped", "skipped", "interrupted", "cancelled". | -             | failed                                                                                                                                                               |
 | description | No       | Test item description. Overrides description from start request.                                          | empty         | Test item description on finish                                                                                                                                      |
-| attributes  | No       | Test item attributes(tags). Pairs of key and value                                                        | empty         | most failed os:android                                                                                                                                               |
+| attributes  | No       | Test item attributes(tags). Pairs of key and value. Overrides attributes on start                                                        | empty         | most failed os:android                                                                                                                                               |
 | retry       | No       | Used to report retry of test. Allowable values: 'true' or 'false'                                         | false         | false                                                                                                                                                                |
 | issue       | No       | Issue of current test item                                                                                | empty         | Will be described below in separate table                                                                                                                            |
 
@@ -321,7 +332,7 @@ With body:
 }
 ```
 
-## Save log without attachment
+## Save single log without attachment
 
 We can save logs for test items.
 For example let's try to save log for `uploadPlugin` test item.
@@ -459,6 +470,72 @@ To do that use the same log endpoint, but in body do not send `itemUuid`
   }
 }
 ```
+Report all the rest
+
+## Finish root(suite) item
+
+Finishing root item can be done the same way as [finish parent item](#finish-parentcontainer-item) and [finish child item](#finish-child-item).
+But we should specify its uuid in request parameter.
+
+```shell script
+curl --header "Content-Type: application/json" \
+     --header "Authorization: Bearer 039eda00-b397-4a6b-bab1-b1a9a90376d1" \
+     --request PUT \
+     --data 'body' \
+     http://rp.com/api/v1/rp_project/item/1e183148-c79f-493a-a615-2c9a888cb441
+```
+
+```json
+{
+  "endTime": "1574423247000",
+  "launchUuid": "96d1bc02-6a3f-451e-b706-719149d51ce4"
+}
+```
+
+## Finish launch
+
+When we finished all test items, it's time to finish launch.
+Endpoint:
+
+PUT `/api/{version}/{projectName}/launch/{launchUuid}/finish`
+
+Finish request model:
+
+| Attribute   | Required | Description                                                                                           | Default value                       | Examples                                                                                                                                                                |
+|-------------|----------|-------------------------------------------------------------------------------------------------------|-------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| endTime     | Yes      | Launch end time                                                                                       | -                                   | 2019-11-22T11:47:01+00:00 (ISO 8601)  Fri, 22 Nov 2019 11:47:01 +0000 (RFC 822, 1036, 1123, 2822)  2019-11-22T11:47:01+00:00 (RFC 3339)  1574423221000 (Unix Timestamp) |
+| status      | No       | Launch status. Allowable values: "passed", "failed", "stopped", "skipped", "interrupted", "cancelled" | calculated from children test items | failed                                                                                                                                                                  |
+| description | No       | Launch description. Overrides description on start                                                    | empty                               | service test                                                                                                                                                            |
+| attributes  | No       | Launch attributes(tags). Pairs of key and value. Overrides attributes on start                        | empty                               |                                                                                                                                                                         |
+
+Finish response model
+
+| Attribute | Required | Description       | Example                                         |
+|-----------|----------|-------------------|-------------------------------------------------|
+| id        | Yes      | Launch UUID       | 6f084c4d-edb5-4691-90ba-d9e819ba61ba            |
+| number    | No       | Launch number     | 1                                               |
+| link      | No       | UI link to launch | http://rp.com/ui/#rp_project/launches/all/73336 |
+
+Full request:
+
+```shell script
+curl --header "Content-Type: application/json" \
+     --header "Authorization: Bearer 039eda00-b397-4a6b-bab1-b1a9a90376d1" \
+     --request PUT \
+     --data 'body' \
+     http://rp.com/api/v1/rp_project/launch/96d1bc02-6a3f-451e-b706-719149d51ce4/finish
+```
+
+Where body is: 
+
+```json
+{
+  "endTime": "1574423255000"
+}
+```
+
+
+
 
 
 
