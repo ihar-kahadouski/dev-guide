@@ -368,6 +368,98 @@ Where body is:
 }
 ```
 
+## Batch save logs
+
+It is convenient to send all logs with attachments using only one request.
+Let's assume we want to save two logs with attachments (file1.pdf and file2.txt)
+
+To the request model adds one more complex attribute `file` with the following parameters:
+
+| Attribute   | Required | Description       | Default value | Example         |
+|-------------|----------|-------------------|---------------|-----------------|
+| name        | No       | File name         | -             | report.pdf      |
+| content     | No       | Byte array        | -             | -               |
+| contentType | No       | File content type | -             | application/pdf |
+
+Response model contains an array of the following objects:
+
+| Attribute  | Required | Description                               | Example                                                                                                                                                                                                                                                                                                                                                                 |
+|------------|----------|-------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| id         | No       | UUID of created log                       | 77542c07-970c-481d-ad5a-b4ccd15ae178                                                                                                                                                                                                                                                                                                                                    |
+| message    | No       | Exception message if error occurrs        | ReportPortalException: Binary data cannot be saved. There is no request part or file with name lin_av.png                                                                                                                                                                                                                                                               |
+| stackTrace | No       | Stack trace of exception if error occurrs | com.epam.ta.reportportal.exception.ReportPortalException: Binary data cannot be saved. There is no request part or file with name lin_av.png\r\n\tat com.epam.ta.reportportal.commons.validation.ErrorTypeBasedRuleValidator.verify(ErrorTypeBasedRuleValidator.java:37)\r\n\tat com.epam.ta.reportportal.ws.controller.LogController.createLog(LogController.java:133) |
+
+Full request:
+
+```shell script
+curl --header "Content-Type: application/json" \
+     --header "Authorization: Bearer 039eda00-b397-4a6b-bab1-b1a9a90376d1" \
+     --request POST \
+     --form 'body' \
+     --form "file=@/path/to/file1.pdf" \
+     --form "file=@/path/to/file2.txt" \
+     http://rp.com/api/v1/rp_project/log
+```
+
+With json body:
+
+```json
+[
+  {
+    "itemUuid": "9c7632a2-272e-4c24-9627-d7d509de7620",
+	"launchUuid": "96d1bc02-6a3f-451e-b706-719149d51ce4",
+	"time": "2019-11-06T15:50:53.187Z",
+	"message": "Some critical exception",
+	"level": 40000,
+	"file": {
+	  "name": "file1.pdf"
+	}
+  },
+  {
+	"itemUuid": "16fb3d7f-ddce-407a-8e52-464a596e6da1",
+	"launchUuid": "96d1bc02-6a3f-451e-b706-719149d51ce4",
+	"time": "2019-11-06T15:50:53.187Z",
+	"message": "java.lang.NullPointerException",
+	"level": 40000,
+	"file": {
+	  "name": "file2.txt"
+	}
+  }	
+]
+```
+
+So we successfully reported logs with file attachments and can see in response:
+
+```json
+{
+  "responses": [
+    {
+      "id": "ec1b0153-a00e-4c61-b6bf-ac0578c2ed43"
+    },
+    {
+      "id": "b7661cb6-7e1a-40e2-8b96-59de41aa96e8"
+    }
+  ]
+}
+```
+
+## Save launch log
+
+It is possible to report log to launch.
+To do that use the same log endpoint, but in body do not send `itemUuid`
+
+```json
+{
+  "launchUuid": "96d1bc02-6a3f-451e-b706-719149d51ce4",
+  "time": "2019-11-06T15:50:53.187Z",
+  "message": "java.lang.NullPointerException",
+  "level": 40000,
+  "file": {
+    "name": "file2.txt"
+  }
+}
+```
+
 
 
 
