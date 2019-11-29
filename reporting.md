@@ -73,7 +73,7 @@ Start launch response contains the following attributes:
 
 So full request to start our launch looks like 
 
-```shell script
+``` shell script
 curl --header "Content-Type: application/json" \
      --header "Authorization: Bearer 039eda00-b397-4a6b-bab1-b1a9a90376d1" \
      --request POST \
@@ -83,7 +83,7 @@ curl --header "Content-Type: application/json" \
 
 Where body is the following json:
 
-```json
+``` json
 {
    "name": "rp_launch",
    "description": "My first launch on RP",
