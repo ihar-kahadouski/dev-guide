@@ -73,7 +73,7 @@ Start launch response contains the following attributes:
 
 So full request to start our launch looks like 
 
-``` shell script
+```shell
 curl --header "Content-Type: application/json" \
      --header "Authorization: Bearer 039eda00-b397-4a6b-bab1-b1a9a90376d1" \
      --request POST \
@@ -83,7 +83,7 @@ curl --header "Content-Type: application/json" \
 
 Where body is the following json:
 
-``` json
+```json
 {
    "name": "rp_launch",
    "description": "My first launch on RP",
@@ -142,7 +142,7 @@ Start test item response contains the following attributes:
 
 So full request to start suite test looks like
 
- ```shell script
+ ```shell
 curl --header "Content-Type: application/json" \
      --header "Authorization: Bearer 039eda00-b397-4a6b-bab1-b1a9a90376d1" \
      --request POST \
@@ -184,7 +184,7 @@ Request and response model the same as for parent item.
 
 Full request:
 
-```shell script
+```shell
 curl --header "Content-Type: application/json" \
      --header "Authorization: Bearer 039eda00-b397-4a6b-bab1-b1a9a90376d1" \
      --request POST \
@@ -216,7 +216,7 @@ And we have a response:
 
 Now we are going to start another final test item in our structure.
 
-```shell script
+```shell
 curl --header "Content-Type: application/json" \
      --header "Authorization: Bearer 039eda00-b397-4a6b-bab1-b1a9a90376d1" \
      --request POST \
@@ -286,7 +286,7 @@ If item finished successfully in the response will be message with item uuid.
 
 Full request:
 
- ```shell script
+ ```shell
 curl --header "Content-Type: application/json" \
      --header "Authorization: Bearer 039eda00-b397-4a6b-bab1-b1a9a90376d1" \
      --request PUT \
@@ -315,7 +315,7 @@ We can report other child items (`updatePlugin`, `removePlugin`) the same way as
 After that we should finish their parent item.
 We can do it the same way as for child items.
 
-```shell script
+```shell
 curl --header "Content-Type: application/json" \
      --header "Authorization: Bearer 039eda00-b397-4a6b-bab1-b1a9a90376d1" \
      --request PUT \
@@ -359,7 +359,7 @@ Response model:
 
 Full request:
 
-```shell script
+```shell
 curl --header "Content-Type: application/json" \
      --header "Authorization: Bearer 039eda00-b397-4a6b-bab1-b1a9a90376d1" \
      --request POST \
