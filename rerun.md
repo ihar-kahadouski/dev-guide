@@ -49,12 +49,17 @@ On the step view we can see that items with names `getActivitiesForProject`, `ge
 
 To start launch rerun you should call [default start launch endpoint](reporting.md#start-launch) adding `"rerun"=true` parameter in the request body.
 
-```javascript
-{ "name": "launch_name", "description": "some description", "mode": "DEFAULT", "rerun": true }
+```json 
+{
+  "name": "launch_name",
+  "description": "some description",
+  "mode": "DEFAULT",
+  "rerun": true
+}
 ```
-And response will contain found launch `id` for synchronous endpoint or `id` and `number` for asynchronous.  
+And response will contain found launch `id` for asynchronous endpoint or `id` and `number` for synchronous.  
  
-```javascript
+```json
 {
   "id": "89f6d409-bee0-428e-baca-4848f86c06e7",
   "number": 4
@@ -125,7 +130,7 @@ rp.reporting.async=true
 rp.rerun=true
 rp.rerun.of=79446272-a439-45f9-8073-5ca7869f140b
 ```
-Where `79446272-a439-45f9-8073-5ca7869f140b` is uuid of desired launch.
+Where `79446272-a439-45f9-8073-5ca7869f140b` is UUID of desired launch.
 
 #### Handling
 
