@@ -45,7 +45,10 @@ On the step view we can see that items with names `getActivitiesForProject`, `ge
 
 ### Latest launch
 
-To start launch rerun add `rp.rerun=true` to `reportportal.properties` file. No need to change anything else(name, project, etc.). In case properties file contains the value, client send request with object `"rerun": true`:
+#### Using API
+
+To start launch rerun you should call [default start launch endpoint](reporting.md#start-launch) adding `"rerun"=true` parameter in the request body.
+
 ```json
 {
     "name": "launch_name",
@@ -54,15 +57,8 @@ To start launch rerun add `rp.rerun=true` to `reportportal.properties` file. No 
     "rerun": true
 }
 ```
-
-System tries to find the latest launch on the project with same name as in request. If launch found system updates the following attributes if they are present in request:
-- Mode
-- Description
-- Attributes
-- UUID
-- Status = `IN_PROGRESS` 
-
-and returns response containing found launch id and number:
+And response will contain found launch `id` for synchronous endpoint or `id` and `number` for asynchronous.  
+ 
 ```json
 {
   "id": "89f6d409-bee0-428e-baca-4848f86c06e7",
@@ -70,27 +66,85 @@ and returns response containing found launch id and number:
 }
 ```
 
-If system cannot find launch with the same name system throws error with `404` code.
+#### Using agent
+
+To start launch rerun add `rp.rerun=true` to `reportportal.properties` file. No need to change anything else(name, project, etc.).
+
+```properties
+rp.endpoint=https://rp.com
+rp.apiKey=caccb4bd-f6e7-48f2-af3a-eca0f566b3bd
+rp.launch=rerun_test_example
+rp.project=reporting-test
+rp.reporting.async=true
+rp.rerun=true
+```
+
+#### Handling
+
+System tries to find the latest launch on the project with same name as in request.
+
+If launch found - system updates the following attributes (if they are present in request and they are different from stored):
+- Mode
+- Description
+- Attributes
+- UUID
+- Status = `IN_PROGRESS`
+
+If system cannot find launch with the same name - system throws error with `404` code.
 
 ### Specified launch
 
-To start launch rerun set `rp.rerun=true` and `rp.rerun.of=launch_uuid` in `reportportal.properties` file where `launch_uuid` uuid of launch that have to be reruned.
+#### Using API
+
+To start launch rerun you should call [default start launch endpoint](reporting.md#start-launch) adding `"rerun"=true` and `"rerunOf"=launch_uuid` parameters in the request body. Where `launch_uuid` is UUID of launch that have to be reruned.
+
+```json
+{
+    "name": "launch_name",
+    "description": "some description",
+    "mode": "DEFAULT",
+    "rerun": true,
+    "rerunOf": "79446272-a439-45f9-8073-5ca7869f140b"
+}
+```
+
+And response will contain found launch `id` for synchronous endpoint or `id` and `number` for asynchronous.  
+ 
+```json
+{
+  "id": "79446272-a439-45f9-8073-5ca7869f140b",
+  "number": 4
+}
+```
+
+#### Using agent
+
+To start launch rerun set `rp.rerun=true` and `rp.rerun.of=launch_uuid` in `reportportal.properties` file. Where `launch_uuid` is UUID of launch that have to be reruned.
 
 ```properties
-rp.endpoint=http://example.reportportal.com
-rp.uuid=ff7ca7f1-4bb8-4e6c-807a-b296b236f7cf
-rp.launch=rerun_example_launch
-rp.project=super_project
+rp.endpoint=https://rp.com
+rp.apiKey=caccb4bd-f6e7-48f2-af3a-eca0f566b3bd
+rp.launch=rerun_test_example
+rp.project=reporting-test
+rp.reporting.async=true
 rp.rerun=true
-rp.rerun.of=6590da5d-0121-402a-ab73-be3d886f6e47
+rp.rerun.of=79446272-a439-45f9-8073-5ca7869f140b
 ```
-Where `6590da5d-0121-402a-ab73-be3d886f6e47` is uuid of desired launch.
+Where `79446272-a439-45f9-8073-5ca7869f140b` is uuid of desired launch.
+
+#### Handling
+
+The same as for [specified launch](#specified-launch).
 
 ## Test Items behavior
 
+There are no differences in API calls for starting and finishing items inside rerun launch. But such items handling is different.
+
 ### Container types (has children)
 
-System tries to find item with the same name, set of parameters and under the same path. If such item found, system updates the following attributes:
+System tries to find item with the same name, set of parameters and under the same path.
+ 
+If such item found - the following attributes will be updated:
 
 - Description
 - UUID
@@ -100,7 +154,11 @@ If not - new item will be created.
 
 ### Step types (without children)
 
-System tries to find item with the same name, set of parameters and under the same path. If such item found, retry of the item created. If not - new item will be created.
+System tries to find item with the same name, set of parameters and under the same path.
+ 
+If such item found - retry of the item will be created.
+ 
+If not - new item will be created.
 
 ## Example
 
