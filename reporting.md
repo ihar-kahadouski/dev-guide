@@ -41,10 +41,66 @@ The main flow is set of HTTP requests:
 
 Steps 2-4 should execute for each test item in structure.
 
-Let's assume that our Report Portal instance deployed at `http://rp.com`.
-And we have api key `039eda00-b397-4a6b-bab1-b1a9a90376d1`. You can find it in profile (`http://rp.com/ui/#user-profile`).
-And our project name is `rp_project`.
+Let's assume that our Report Portal instance deployed at `http://rp.com`. And our project name is `rp_project`.
 
+Also we need token to get access to API. There are two ways to retrieve it:
+
+#### Using UI
+
+You can find it in profile (`http://rp.com/ui/#user-profile`).
+
+#### Using UAT service
+
+First of all you need UI-token. You can get it sending POST request to `http://rp.com/uat/sso/oauth/token` with user credentials.
+
+```shell
+curl --header "Content-Type: application/x-www-form-urlencoded" \
+     --request POST \
+     --data "grant_type=password&username=default&password=1q2w3e" \
+     --user "ui:uiman" \
+     http://rp.com/uat/sso/oauth/token
+```
+
+Response will contain `access_token` field which is UI-token 
+
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NzU5MDA0NDgsInVzZXJfbmFtZSI6ImRlZmF1bHQiLCJhdXRob3JpdGllcyI6WyJST0xFX1VTRVIiXSwianRpIjoiOGQxZmUxOGUtNWY4NC00YTcwLWEwMTctNDBmZTU4ZmY3MjU3IiwiY2xpZW50X2lkIjoidWkiLCJzY29wZSI6WyJ1aSJdfQ.-5INLZnYJhNLwU5BTBuEDd0SBPoRGLBX6uX03kaEwLs",
+  "token_type": "bearer",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX25hbWUiOiJkZWZhdWx0Iiwic2NvcGUiOlsidWkiXSwiYXRpIjoiOGQxZmUxOGUtNWY4NC00YTcwLWEwMTctNDBmZTU4ZmY3MjU3IiwiZXhwIjoxNTc4NDg4ODQ4LCJhdXRob3JpdGllcyI6WyJST0xFX1VTRVIiXSwianRpIjoiMGQyZDdiNTEtNGE3Mi00NjEwLTgxYmUtY2JmYjZhODhjNTgxIiwiY2xpZW50X2lkIjoidWkifQ.YOcpWlQSgF3LuskIqXgasjKvawbM_XP_I2oNJcgt9mM",
+  "expires_in": 3600,
+  "scope": "ui",
+  "jti": "8d1fe18e-5f84-4a70-a017-40fe58ff7257"
+}
+```
+
+Next step is retrieve API-token that lives longer that UI-token.
+
+```shell
+curl --header "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NzU5MDA0NDgsInVzZXJfbmFtZSI6ImRlZmF1bHQiLCJhdXRob3JpdGllcyI6WyJST0xFX1VTRVIiXSwianRpIjoiOGQxZmUxOGUtNWY4NC00YTcwLWEwMTctNDBmZTU4ZmY3MjU3IiwiY2xpZW50X2lkIjoidWkiLCJzY29wZSI6WyJ1aSJdfQ.-5INLZnYJhNLwU5BTBuEDd0SBPoRGLBX6uX03kaEwLs" \
+     --request GET \
+     http://rp.com/uat/sso/me/apitoken
+```
+
+And in response you can see `access_token` which is API-token
+
+```json
+{
+  "access_token": "039eda00-b397-4a6b-bab1-b1a9a90376d1",
+  "token_type": "bearer",
+  "scope": "api"
+}
+```
+
+In case you have response with `404` error code, you should send POST request to the same endpoint. It means API-token haven't been generated for user and this request will create one.
+
+```shell
+curl --header "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NzU5MDA0NDgsInVzZXJfbmFtZSI6ImRlZmF1bHQiLCJhdXRob3JpdGllcyI6WyJST0xFX1VTRVIiXSwianRpIjoiOGQxZmUxOGUtNWY4NC00YTcwLWEwMTctNDBmZTU4ZmY3MjU3IiwiY2xpZW50X2lkIjoidWkiLCJzY29wZSI6WyJ1aSJdfQ.-5INLZnYJhNLwU5BTBuEDd0SBPoRGLBX6uX03kaEwLs" \
+     --request POST \
+     http://rp.com/uat/sso/me/apitoken
+```
+
+So our API-token is `039eda00-b397-4a6b-bab1-b1a9a90376d1`
 
 ## Start launch
 
