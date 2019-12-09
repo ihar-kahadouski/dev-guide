@@ -109,23 +109,25 @@ POST `/api/{version}/{projectName}/launch`
 
 Start launch request model contains the following attributes:
 
-|  Attribute  | Required | Description                                                              | Default value       | Examples                                                                                                                                                             |
-|:-----------:|----------|--------------------------------------------------------------------------|---------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| name        | Yes      | Name of launch                                                           | -                   | AutomationRun                                                                                                                                                        |
-| startTime   | Yes      | Launch start time                                                        | -                   | 2019-11-22T11:47:01+00:00 (ISO 8601) Fri, 22 Nov 2019 11:47:01 +0000 (RFC 822, 1036, 1123, 2822) 2019-11-22T11:47:01+00:00 (RFC 3339) 1574423221000 (Unix Timestamp) |
-| description | No       | Description of launch                                                    | empty               | Services tests                                                                                                                                                       |
-| uuid        | No       | Launch uuid (string identificator)                                       | auto generated UUID | 69dc75cd-4522-44b9-9015-7685ec0e1abb                                                                                                                                 |
-| attributes  | No       | Launch attributes(tags). Pairs of key and value                          | empty               | build:3.0.1 os:bionic                                                                                                                                                |
-| mode        | No       | Launch mode. Allowable values 'default' or 'debug'                       | default             | DEFAULT                                                                                                                                                              |
-| rerun       | No       | Rerun mode. Allowable values 'true' of 'false'                           | false               | false                                                                                                                                                                |
-| rerunOf     | No       | Rerun mode. Specifies launch to be reruned. Uses with 'rerun' attribute. | empty               | 694e1549-b8ab-4f20-b7d8-8550c92431b0                                                                                                                                 |
+|  Attribute  | Required | Description                                                              | Default value                             | Examples                                                                                                                                                                |
+|:-----------:|----------|--------------------------------------------------------------------------|-------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| name        | Yes      | Name of launch                                                           | -                                         | AutomationRun                                                                                                                                                           |
+| startTime   | Yes      | Launch start time                                                        | -                                         | 2019-11-22T11:47:01+00:00 (ISO 8601); Fri, 22 Nov 2019 11:47:01 +0000 (RFC 822, 1036, 1123, 2822); 2019-11-22T11:47:01+00:00 (RFC 3339); 1574423221000 (Unix Timestamp) |
+| description | No       | Description of launch                                                    | empty                                     | Services tests                                                                                                                                                          |
+| uuid        | No       | Launch uuid (string identificator)                                       | auto generated(if not present in request) | 69dc75cd-4522-44b9-9015-7685ec0e1abb                                                                                                                                    |
+| attributes  | No       | Launch attributes(tags). Pairs of key and value                          | empty                                     | build:3.0.1, os:bionic                                                                                                                                                  |
+| mode        | No       | Launch mode. Allowable values 'default' or 'debug'                       | default                                   | DEFAULT                                                                                                                                                                 |
+| rerun       | No       | Rerun mode. Allowable values 'true' of 'false'                           | false                                     | false                                                                                                                                                                   |
+| rerunOf     | No       | Rerun mode. Specifies launch to be reruned. Uses with 'rerun' attribute. | empty                                     | 694e1549-b8ab-4f20-b7d8-8550c92431b0                                                                                                                                    |
 
 Start launch response contains the following attributes:
 
-| Attribute | Required | Description              | Examples                             |
-|-----------|----------|--------------------------|--------------------------------------|
-| id        | Yes      |  UUID of created launch  | 1d1fb22e-01f7-4ac9-9ebc-f020d8fe93ff |
-| number    | No       | Number of created launch | 1                                    |
+| Attribute  | Required | Description              | Examples                             |
+|------------|----------|--------------------------|--------------------------------------|
+| id         | Yes      |  UUID of created launch  | 1d1fb22e-01f7-4ac9-9ebc-f020d8fe93ff |
+| number (*) | No       | Number of created launch | 1                                    |
+
+`(*)` Field is not present in case using async endpoints
 
 So full request to start our launch looks like 
 
@@ -133,7 +135,7 @@ So full request to start our launch looks like
 curl --header "Content-Type: application/json" \
      --header "Authorization: Bearer 039eda00-b397-4a6b-bab1-b1a9a90376d1" \
      --request POST \
-     --data 'body' \
+     --data '{"name":"rp_launch","description":"My first launch on RP","startTime":"1574423221000","mode":"DEFAULT","attributes":[{"key":"build","value":"0.1"},{"value":"test"}]}' \
      http://rp.com/api/v1/rp_project/launch
 ```
 
@@ -141,20 +143,20 @@ Where body is the following json:
 
 ```json
 {
-   "name": "rp_launch",
-   "description": "My first launch on RP",
-   "startTime": "1574423221000",
-   "mode": "DEFAULT",
-   "attributes": [
-     {
-       "key": "build",
-       "value": "0.1"
-     },
-     {
-       "value": "test"
-     }   
-   ] 
- }
+  "name": "rp_launch",
+  "description": "My first launch on RP",
+  "startTime": "1574423221000",
+  "mode": "DEFAULT",
+  "attributes": [
+    {
+      "key": "build",
+      "value": "0.1"
+    },
+    {
+      "value": "test"
+    }   
+  ] 
+}
 ```
 
 In the response we can see `id` and `number` if launch started successfully or an error if something went wrong. 
@@ -165,7 +167,7 @@ In the response we can see `id` and `number` if launch started successfully or a
   "number": 1
 }
 ```
-Value of `id` field should save somewhere. It will be used later to report test items.
+Value of `id` field should save somewhere. It is obligatory for report test items under this launch and will be used later.
 
 ## Start root(suite) item
 
@@ -175,20 +177,20 @@ POST `/api/{version}/{projectName}/item`
 
 Start test item request model contains the following attributes:
 
-| Attribute   | Required | Description                                                                                                                                                                                                                                         | Default value  | Examples                                                                                                                                                             |
-|-------------|----------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| name        | Yes      | Name of test item                                                                                                                                                                                                                                   | -              | Logging Tests                                                                                                                                                        |
-| startTime   | Yes      | Test item start time                                                                                                                                                                                                                                | -              | 2019-11-22T11:47:01+00:00 (ISO 8601) Fri, 22 Nov 2019 11:47:01 +0000 (RFC 822, 1036, 1123, 2822) 2019-11-22T11:47:01+00:00 (RFC 3339) 1574423221000 (Unix Timestamp) |
-| type        | Yes      | Type of test item. Allowable values: "suite", "story", "test", "scenario", "step", "before_class", "before_groups", "before_method", "before_suite",      "before_test", "after_class", "after_groups", "after_method", "after_suite", "after_test" | -              | suite                                                                                                                                                                |
-| launchUuid  | Yes      | Parent launch UUID                                                                                                                                                                                                                                  | -              | 96d1bc02-6a3f-451e-b706-719149d51ce4                                                                                                                                 |
-| description | No       | Test item description                                                                                                                                                                                                                               | empty          | Tests of loggers                                                                                                                                                     |
-| attributes  | No       | Test item attributes(tags). Pairs of key and value                                                                                                                                                                                                  | empty          | most failed os:android                                                                                                                                               |
-| uuid        | No       | Test item UUID                                                                                                                                                                                                                                      | auto generated | e9ca837e-966c-412e-bf8b-e879510d99d5                                                                                                                                 |
-| codeRef     | No       | Physical location of test item                                                                                                                                                                                                                      | empty          | com.rpproject.tests.LoggingTests                                                                                                                                     |
-| parameters  | No       | Set of parameters (for parametrized tests)                                                                                                                                                                                                          | empty          | logger:logback                                                                                                                                                       |
-| uniqueId    | No       |                                                                                                                                                                                                                                                     | auto generated | auto:cd5a6c616d412b6739738951c922377f                                                                                                                                |
-| retry       | No       | Used to report retry of test. Allowable values: 'true' or 'false'                                                                                                                                                                                   | false          | false                                                                                                                                                                |
-| hasStats    | No       |                                                                                                                                                                                                                                                     | true           | true                                                                                                                                                                 |
+| Attribute   | Required | Description                                                                                                                                                                                                                                         | Default value  | Examples                                                                                                                                                                |
+|-------------|----------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| name        | Yes      | Name of test item                                                                                                                                                                                                                                   | -              | Logging Tests                                                                                                                                                           |
+| startTime   | Yes      | Test item start time                                                                                                                                                                                                                                | -              | 2019-11-22T11:47:01+00:00 (ISO 8601); Fri, 22 Nov 2019 11:47:01 +0000 (RFC 822, 1036, 1123, 2822); 2019-11-22T11:47:01+00:00 (RFC 3339); 1574423221000 (Unix Timestamp) |
+| type        | Yes      | Type of test item. Allowable values: "suite", "story", "test", "scenario", "step", "before_class", "before_groups", "before_method", "before_suite",      "before_test", "after_class", "after_groups", "after_method", "after_suite", "after_test" | -              | suite                                                                                                                                                                   |
+| launchUuid  | Yes      | Parent launch UUID                                                                                                                                                                                                                                  | -              | 96d1bc02-6a3f-451e-b706-719149d51ce4                                                                                                                                    |
+| description | No       | Test item description                                                                                                                                                                                                                               | empty          | Tests of loggers                                                                                                                                                        |
+| attributes  | No       | Test item attributes(tags). Pairs of key and value                                                                                                                                                                                                  | empty          | most failed, os:android                                                                                                                                                 |
+| uuid        | No       | Test item UUID                                                                                                                                                                                                                                      | auto generated | e9ca837e-966c-412e-bf8b-e879510d99d5                                                                                                                                    |
+| codeRef     | No       | Physical location of test item                                                                                                                                                                                                                      | empty          | com.rpproject.tests.LoggingTests                                                                                                                                        |
+| parameters  | No       | Set of parameters (for parametrized tests)                                                                                                                                                                                                          | empty          | logger:logback                                                                                                                                                          |
+| uniqueId    | No       |                                                                                                                                                                                                                                                     | auto generated | auto:cd5a6c616d412b6739738951c922377f                                                                                                                                   |
+| retry       | No       | Used to report retry of test. Allowable values: 'true' or 'false'                                                                                                                                                                                   | false          | false                                                                                                                                                                   |
+| hasStats    | No       |                                                                                                                                                                                                                                                     | true           | true                                                                                                                                                                    |
 
 Start test item response contains the following attributes:
 
@@ -202,7 +204,7 @@ So full request to start suite test looks like
 curl --header "Content-Type: application/json" \
      --header "Authorization: Bearer 039eda00-b397-4a6b-bab1-b1a9a90376d1" \
      --request POST \
-     --data 'body' \
+     --data '{"name":"Services","startTime":"1574423234000","type":"suite","launchUuid":"96d1bc02-6a3f-451e-b706-719149d51ce4","description":"Services tests"}' \
      http://rp.com/api/v1/rp_project/item
 ```
 
@@ -244,7 +246,7 @@ Full request:
 curl --header "Content-Type: application/json" \
      --header "Authorization: Bearer 039eda00-b397-4a6b-bab1-b1a9a90376d1" \
      --request POST \
-     --data 'body' \
+     --data '{"name":"PluginServiceTest","startTime":"1574423236000","type":"test","launchUuid":"96d1bc02-6a3f-451e-b706-719149d51ce4","description":"Plugin tests"}' \
      http://rp.com/api/v1/rp_project/item/1e183148-c79f-493a-a615-2c9a888cb441
 ```
 
@@ -276,7 +278,7 @@ Now we are going to start another final test item in our structure.
 curl --header "Content-Type: application/json" \
      --header "Authorization: Bearer 039eda00-b397-4a6b-bab1-b1a9a90376d1" \
      --request POST \
-     --data 'body' \
+     --data '{"name":"uploadPlugin","startTime":"1574423237000","type":"step","launchUuid":"96d1bc02-6a3f-451e-b706-719149d51ce4","description":"Uploading plugin"}' \
      http://rp.com/api/v1/rp_project/item/bb237b98-22b0-4289-9490-9bb29215fe5e
 ```
 
@@ -308,22 +310,22 @@ PUT `/api/{version}/{projectName}/item/{itemUuid}`
 
 Finish test item request model:
 
-| Attribute   | Required | Description                                                                                               | Default value | Example                                                                                                                                                              |
-|-------------|----------|-----------------------------------------------------------------------------------------------------------|---------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| endTime     | Yes      | Test item end time                                                                                        | -             | 2019-11-22T11:47:01+00:00 (ISO 8601) Fri, 22 Nov 2019 11:47:01 +0000 (RFC 822, 1036, 1123, 2822) 2019-11-22T11:47:01+00:00 (RFC 3339) 1574423221000 (Unix Timestamp) |
-| launchUuid  | Yes      | Parent launch UUID                                                                                        | -             | 48ecc273-032f-44d4-822a-66e494e9b1e8                                                                                                                                 |
-| status      | No       | Test item status. Allowable values: "passed", "failed", "stopped", "skipped", "interrupted", "cancelled". | -             | failed                                                                                                                                                               |
-| description | No       | Test item description. Overrides description from start request.                                          | empty         | Test item description on finish                                                                                                                                      |
-| attributes  | No       | Test item attributes(tags). Pairs of key and value. Overrides attributes on start                                                        | empty         | most failed os:android                                                                                                                                               |
-| retry       | No       | Used to report retry of test. Allowable values: 'true' or 'false'                                         | false         | false                                                                                                                                                                |
-| issue       | No       | Issue of current test item                                                                                | empty         | Will be described below in separate table                                                                                                                            |
+| Attribute   | Required | Description                                                                                               | Default value | Example                                                                                                                                                                 |
+|-------------|----------|-----------------------------------------------------------------------------------------------------------|---------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| endTime     | Yes      | Test item end time                                                                                        | -             | 2019-11-22T11:47:01+00:00 (ISO 8601); Fri, 22 Nov 2019 11:47:01 +0000 (RFC 822, 1036, 1123, 2822); 2019-11-22T11:47:01+00:00 (RFC 3339); 1574423221000 (Unix Timestamp) |
+| launchUuid  | Yes      | Parent launch UUID                                                                                        | -             | 48ecc273-032f-44d4-822a-66e494e9b1e8                                                                                                                                    |
+| status      | No       | Test item status. Allowable values: "passed", "failed", "stopped", "skipped", "interrupted", "cancelled". | -             | failed                                                                                                                                                                  |
+| description | No       | Test item description. Overrides description from start request.                                          | empty         | Test item description on finish                                                                                                                                         |
+| attributes  | No       | Test item attributes(tags). Pairs of key and value. Overrides attributes on start                         | empty         | most failed, os:android                                                                                                                                                 |
+| retry       | No       | Used to report retry of test. Allowable values: 'true' or 'false'                                         | false         | false                                                                                                                                                                   |
+| issue       | No       | Issue of current test item                                                                                | empty         | Will be described below in separate table                                                                                                                               |
 
 Issue part for finish test item model:
 
 | Attribute            | Required | Description                                                                                                 | Default value | Example                                   |
 |----------------------|----------|-------------------------------------------------------------------------------------------------------------|---------------|-------------------------------------------|
 | issueType            | Yes      | Issue type locator. Allowable values: "pb***", "ab***", "si***", "ti***", "nd001". Where *** is locator id. | -             | pb001                                     |
-| comment              | No       | Issue commnet                                                                                               | empty         | Framework issue. Script outdated          |
+| comment              | No       | Issue comment                                                                                               | empty         | Framework issue. Script outdated          |
 | autoAnalyzed         | No       | Is issue was submitted by auto analyzer                                                                     | false         | false                                     |
 | ignoreAnalyzer       | No       | Is issue should be ignored during auto analysis                                                             | false         | false                                     |
 | externalSystemIssues | No       | Set of external system issues                                                                               | empty         | Will be described in separate table below |
@@ -346,7 +348,7 @@ Full request:
 curl --header "Content-Type: application/json" \
      --header "Authorization: Bearer 039eda00-b397-4a6b-bab1-b1a9a90376d1" \
      --request PUT \
-     --data 'body' \
+     --data '{"endTime":"1574423239000","status":"failed","launchUuid":"96d1bc02-6a3f-451e-b706-719149d51ce4","issue":{"issueType":"pb001","comment":"Some critical issue"}}' \
      http://rp.com/api/v1/rp_project/item/22e55c62-d028-4b49-840f-195d7a48b114
 ```
 
@@ -375,7 +377,7 @@ We can do it the same way as for child items.
 curl --header "Content-Type: application/json" \
      --header "Authorization: Bearer 039eda00-b397-4a6b-bab1-b1a9a90376d1" \
      --request PUT \
-     --data 'body' \
+     --data '{"endTime":"1574423241000","launchUuid":"96d1bc02-6a3f-451e-b706-719149d51ce4"}' \
      http://rp.com/api/v1/rp_project/item/bb237b98-22b0-4289-9490-9bb29215fe5e
 ```
 
@@ -399,13 +401,13 @@ Common endpoint: POST `/api/{version}/{projectName}/log`
 
 And it has the following request model:
 
-| Attribute  | Required | Description                                                                                                                  | Default value | Example                                                                                                                                                                |
-|------------|----------|------------------------------------------------------------------------------------------------------------------------------|---------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| launchUuid | Yes      | Launch UUID                                                                                                                  | -             | e80b62e1-b297-47a0-be22-5a4a25920c0a                                                                                                                                   |
-| time       | Yes      | Log time                                                                                                                     | -             | 2019-11-22T11:47:01+00:00 (ISO 8601) Fri, 22 Nov 2019 11:47:01 +0000 (RFC 822, 1036, 1123, 2822)  2019-11-22T11:47:01+00:00 (RFC 3339)  1574423221000 (Unix Timestamp) |
-| itemUuid   | No       | Test item UUID                                                                                                               | empty         | fb2a012f-5996-45a0-b3bb-d8210b4fb980                                                                                                                                   |
-| message    | No       | Log message                                                                                                                  | empty         | [Forwarding findElement on session 477bee808ca0c415a7aae2de2edc5cc9 to remote] DEBUG o.a.h.c.protocol.RequestAddCookies - CookieSpec selected: default                 |
-| level      | No       | Log level. Allowable values: error(40000), warn(30000), info(20000), debug(10000), trace(5000), fatal(50000), unknown(60000) | ?             | error                                                                                                                                                                  |
+| Attribute  | Required | Description                                                                                                                  | Default value | Example                                                                                                                                                                   |
+|------------|----------|------------------------------------------------------------------------------------------------------------------------------|---------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| launchUuid | Yes      | Launch UUID                                                                                                                  | -             | e80b62e1-b297-47a0-be22-5a4a25920c0a                                                                                                                                      |
+| time       | Yes      | Log time                                                                                                                     | -             | 2019-11-22T11:47:01+00:00 (ISO 8601); Fri, 22 Nov 2019 11:47:01 +0000 (RFC 822, 1036, 1123, 2822);  2019-11-22T11:47:01+00:00 (RFC 3339);  1574423221000 (Unix Timestamp) |
+| itemUuid   | No       | Test item UUID                                                                                                               | empty         | fb2a012f-5996-45a0-b3bb-d8210b4fb980                                                                                                                                      |
+| message    | No       | Log message                                                                                                                  | empty         | [Forwarding findElement on session 477bee808ca0c415a7aae2de2edc5cc9 to remote] DEBUG o.a.h.c.protocol.RequestAddCookies - CookieSpec selected: default                    |
+| level      | No       | Log level. Allowable values: error(40000), warn(30000), info(20000), debug(10000), trace(5000), fatal(50000), unknown(60000) | ?             | error                                                                                                                                                                     |
 
 Response model: 
 
@@ -419,7 +421,7 @@ Full request:
 curl --header "Content-Type: application/json" \
      --header "Authorization: Bearer 039eda00-b397-4a6b-bab1-b1a9a90376d1" \
      --request POST \
-     --data 'body' \
+     --data '{"launchUuid":"96d1bc02-6a3f-451e-b706-719149d51ce4","itemUuid":"22e55c62-d028-4b49-840f-195d7a48b114","time":"1574423245000","message":"An error occurred while connecting to the server [Nested exception is java.lang.NoClassDefFoundError]","level":"error"}' \
      http://rp.com/api/v1/rp_project/log
 ```
 
@@ -450,11 +452,13 @@ To the request model adds one more complex attribute `file` with the following p
 
 Response model contains an array of the following objects:
 
-| Attribute  | Required | Description                               | Example                                                                                                                                                                                                                                                                                                                                                                 |
-|------------|----------|-------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| id         | No       | UUID of created log                       | 77542c07-970c-481d-ad5a-b4ccd15ae178                                                                                                                                                                                                                                                                                                                                    |
-| message    | No       | Exception message if error occurrs        | ReportPortalException: Binary data cannot be saved. There is no request part or file with name lin_av.png                                                                                                                                                                                                                                                               |
-| stackTrace | No       | Stack trace of exception if error occurrs | com.epam.ta.reportportal.exception.ReportPortalException: Binary data cannot be saved. There is no request part or file with name lin_av.png\r\n\tat com.epam.ta.reportportal.commons.validation.ErrorTypeBasedRuleValidator.verify(ErrorTypeBasedRuleValidator.java:37)\r\n\tat com.epam.ta.reportportal.ws.controller.LogController.createLog(LogController.java:133) |
+| Attribute      | Required | Description                               | Example                                                                                                                                                                                                                                                                                                                                                                 |
+|----------------|----------|-------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| id             | No       | UUID of created log                       | 77542c07-970c-481d-ad5a-b4ccd15ae178                                                                                                                                                                                                                                                                                                                                    |
+| message (*)    | No       | Exception message if error occurrs        | ReportPortalException: Binary data cannot be saved. There is no request part or file with name lin_av.png                                                                                                                                                                                                                                                               |
+| stackTrace (*) | No       | Stack trace of exception if error occurrs | com.epam.ta.reportportal.exception.ReportPortalException: Binary data cannot be saved. There is no request part or file with name lin_av.png\r\n\tat com.epam.ta.reportportal.commons.validation.ErrorTypeBasedRuleValidator.verify(ErrorTypeBasedRuleValidator.java:37)\r\n\tat com.epam.ta.reportportal.ws.controller.LogController.createLog(LogController.java:133) |
+
+`(*)` Fields are present only if error occurred.
 
 Full request:
 
@@ -462,7 +466,7 @@ Full request:
 curl --header "Content-Type: application/json" \
      --header "Authorization: Bearer 039eda00-b397-4a6b-bab1-b1a9a90376d1" \
      --request POST \
-     --form 'body' \
+     --form '[{"itemUuid":"9c7632a2-272e-4c24-9627-d7d509de7620","launchUuid":"96d1bc02-6a3f-451e-b706-719149d51ce4","time":"2019-11-06T15:50:53.187Z","message":"Some critical exception","level":40000,"file":{"name":"file1.pdf"}},{"itemUuid":"16fb3d7f-ddce-407a-8e52-464a596e6da1","launchUuid":"96d1bc02-6a3f-451e-b706-719149d51ce4","time":"2019-11-06T15:50:53.187Z","message":"java.lang.NullPointerException","level":40000,"file":{"name":"file2.txt"}}]' \
      --form "file=@/path/to/file1.pdf" \
      --form "file=@/path/to/file2.txt" \
      http://rp.com/api/v1/rp_project/log
@@ -512,7 +516,7 @@ So we successfully reported logs with file attachments and can see in response:
 
 ## Save launch log
 
-It is possible to report log to launch.
+It is possible to report log attached to launch.
 To do that use the same log endpoint, but in body do not send `itemUuid`
 
 ```json
@@ -526,7 +530,8 @@ To do that use the same log endpoint, but in body do not send `itemUuid`
   }
 }
 ```
-Report all the rest
+
+The same way we can report all the rest test items.
 
 ## Finish root(suite) item
 
@@ -537,7 +542,7 @@ But we should specify its uuid in request parameter.
 curl --header "Content-Type: application/json" \
      --header "Authorization: Bearer 039eda00-b397-4a6b-bab1-b1a9a90376d1" \
      --request PUT \
-     --data 'body' \
+     --data '{"endTime":"1574423247000","launchUuid":"96d1bc02-6a3f-451e-b706-719149d51ce4"}' \
      http://rp.com/api/v1/rp_project/item/1e183148-c79f-493a-a615-2c9a888cb441
 ```
 
@@ -559,7 +564,7 @@ Finish request model:
 
 | Attribute   | Required | Description                                                                                           | Default value                       | Examples                                                                                                                                                                |
 |-------------|----------|-------------------------------------------------------------------------------------------------------|-------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| endTime     | Yes      | Launch end time                                                                                       | -                                   | 2019-11-22T11:47:01+00:00 (ISO 8601)  Fri, 22 Nov 2019 11:47:01 +0000 (RFC 822, 1036, 1123, 2822)  2019-11-22T11:47:01+00:00 (RFC 3339)  1574423221000 (Unix Timestamp) |
+| endTime     | Yes      | Launch end time                                                                                       | -                                   | 2019-11-22T11:47:01+00:00 (ISO 8601); Fri, 22 Nov 2019 11:47:01 +0000 (RFC 822, 1036, 1123, 2822); 2019-11-22T11:47:01+00:00 (RFC 3339); 1574423221000 (Unix Timestamp) |
 | status      | No       | Launch status. Allowable values: "passed", "failed", "stopped", "skipped", "interrupted", "cancelled" | calculated from children test items | failed                                                                                                                                                                  |
 | description | No       | Launch description. Overrides description on start                                                    | empty                               | service test                                                                                                                                                            |
 | attributes  | No       | Launch attributes(tags). Pairs of key and value. Overrides attributes on start                        | empty                               |                                                                                                                                                                         |
@@ -569,8 +574,10 @@ Finish response model
 | Attribute | Required | Description       | Example                                         |
 |-----------|----------|-------------------|-------------------------------------------------|
 | id        | Yes      | Launch UUID       | 6f084c4d-edb5-4691-90ba-d9e819ba61ba            |
-| number    | No       | Launch number     | 1                                               |
-| link      | No       | UI link to launch | http://rp.com/ui/#rp_project/launches/all/73336 |
+| number (*)| No       | Launch number     | 1                                               |
+| link (*)  | No       | UI link to launch | http://rp.com/ui/#rp_project/launches/all/73336 |
+
+`(*)` - In case async endpoint field is missing or empty 
 
 Full request:
 
@@ -578,7 +585,7 @@ Full request:
 curl --header "Content-Type: application/json" \
      --header "Authorization: Bearer 039eda00-b397-4a6b-bab1-b1a9a90376d1" \
      --request PUT \
-     --data 'body' \
+     --data '{"endTime":"1574423255000"}' \
      http://rp.com/api/v1/rp_project/launch/96d1bc02-6a3f-451e-b706-719149d51ce4/finish
 ```
 
