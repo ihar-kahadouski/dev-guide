@@ -12,6 +12,7 @@
 1. [Save launch log](#save-launch-log)
 1. [Finish root(suite) item](#finish-rootsuite-item)
 1. [Finish launch](#finish-launch)
+1. [Example](#example)
 
 ## Preconditions
 
@@ -597,26 +598,6 @@ Where body is:
 }
 ```
 
+## Example
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Example using bash yo can find [here](/bash-example/main.sh)
