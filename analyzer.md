@@ -2,10 +2,12 @@
 
 1. [Overview](#overview)
 1. [Declaring exchange](#declaring-exchange)
+1. [Indexing](#indexing)
+1. [Analyze](#analyze)
 
 ## Overview
 
-Communication between `API service` and `analyzer service` is carried out using [AMQP 0-9-1](http://www.amqp.org/specification/0-9-1/amqp-org-download) and [RabbitMQ](https://www.rabbitmq.com) as message broker. `API service` creates [virtual host](https://www.rabbitmq.com/vhosts.html) inside RabbitMQ with name `analyzer` on start. Analyzers in theirs turn connect to the virtual host and declare exchange with name and arguments. Any type of request from `API` and response from `analyzer` stores in the same queue.  
+Communication between `API service` and `analyzer service` is carried out using [AMQP 0-9-1](http://www.amqp.org/specification/0-9-1/amqp-org-download) and [RabbitMQ](https://www.rabbitmq.com) as message broker. `API service` creates [virtual host](https://www.rabbitmq.com/vhosts.html) inside RabbitMQ with name `analyzer` on start. Analyzers in theirs turn connect to the virtual host and declare exchange with name and arguments. Any type of request from `API` and response from `analyzer` stores in the same queue. Request and response messages is presented as JSON.  
 
 ![](/images/analyzer/api-analyzer.png)
 
@@ -27,7 +29,95 @@ Each analyzer has to declare 5 queues with names: `analyze`, `search`, `index`, 
 
 ![](/images/analyzer/queues.png)
 
-### Indexing
+## Indexing
+
+Index request is used to store info about logs and then analysis will be proceed based on the info.
+
+Index request:
+
+IndexLaunch:
+
+| Attribute      | Description            | Example    |
+|----------------|------------------------|------------|
+| launchId       | Id of launch           | 101        |
+| launchName     | Name of launch         | Smoke Test |
+| project        | Id of project          | 12         |
+| analyzerConfig | Analyzer configuration |            |
+| testItems      | Array of test items    |            |
+
+AnalyzerConfig:
+
+| Attribute             | Description                                                                  | Example |
+|-----------------------|------------------------------------------------------------------------------|---------|
+| minDocFreq            | The minimum frequency of the saved logs                                      | 1       |
+| minTermFreq           | The minimum frequency of the word in the analyzed log                        | 1       |
+| minShouldMatch        | Percent of words equality between analyzed log and particular log from index | 95      |
+| numberOfLogLines      | The number of first lines of log message that should be considered in indeT  | -1      |
+| isAutoAnalyzerEnabled | Is auto analysis enabled                                                     | true    |
+| analyzerMode          | Analysis mode. Allowable values: "all", "launch_name", "current_launch"      | all     |
+| indexingRunning       | Is indexing running                                                          | false   |
+
+IndexTestItem:
+
+| Attribute      | Description                | Example                               |
+|----------------|----------------------------|---------------------------------------|
+| testItemId     | Id of test item            | 123                                   |
+| issueType      | Issue type locator         | pb001                                 |
+| uniqueId       | Unique id of test item     | auto:c6edafc24a03c6f69b6ec070d1fd0089 |
+| isAutoAnalyzed | Is test item auto analyzed | false                                 |
+| logs           | Array of test item logs    |                                       |
+
+IndexLog:
+
+| Attribute | Descrioption | Example                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+|-----------|--------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| logId     | Id of log    | 125                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| logLevel  | Log level    | 40000                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| message   | Log message  | java.lang.AssertionError: 1 expectation failed. Expected status code <200> but was <400>.  	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method) 	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62) 	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45) 	at java.lang.reflect.Constructor.newInstance(Constructor.java:423) |
+
+Example in json :
+
+```json
+{
+  "launchId": 110,
+  "launchName": "Smoke Test",
+  "project": 11,
+  "analyzerConfig": {
+    "minDocFreq": 1,
+    "minTermFreq": 1,
+    "minShouldMatch": 95,
+    "numberOfLogLines": -1,
+    "isAutoAnalyzerEnabled": true,
+    "analyzerMode": "all",
+    "indexingRunning": false
+  }, 
+  "testItems": [
+    {
+      "testItemId": 101,
+      "issueType": "pb001",
+      "uniqueId": "auto:c6edafc24a03c6f69b6ec070d1fd0089",
+      "isAutoAnalyzed": false,
+      "logs": [
+        {
+          "logId": 111,
+          "logLevel": 40000,
+          "message": "java.lang.AssertionError: 1 expectation failed. Expected status code <200> but was <400>."
+        },
+        {
+          "logId": 112,
+          "logLevel": 40000,
+          "message": "java.lang.AssertionError: 1 expectation failed. Expected status code <200> but was <500>."
+        }      
+      ] 
+    }
+  ]
+}
+```
+
+Analyzer should return response with number of indexed logs.
+
+##Analyze
+
 
 
 
