@@ -5,6 +5,8 @@
 1. [Indexing](#indexing)
 1. [Analyze](#analyze)
 
+1. [Examples](#examples)
+
 ## Overview
 
 Communication between `API service` and `analyzer service` is carried out using [AMQP 0-9-1](http://www.amqp.org/specification/0-9-1/amqp-org-download) and [RabbitMQ](https://www.rabbitmq.com) as message broker. `API service` creates [virtual host](https://www.rabbitmq.com/vhosts.html) inside RabbitMQ with name `analyzer` on start. Analyzers in theirs turn connect to the virtual host and declare exchange with name and arguments. Any type of request from `API` and response from `analyzer` stores in the same queue. Request and response messages is presented as JSON.  
@@ -137,3 +139,8 @@ AnalyzedItemRs:
 | issueType      | Issue type locator       | pb001   |
 
 ## Search logs
+
+
+## Examples
+
+Custom [analyzer](https://github.com/ihar-kahadouski/custom-analyzer) written in java.
