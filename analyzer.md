@@ -185,4 +185,4 @@ Analyzer do not send response on the request.
 
 ## Examples
 
-Custom [analyzer](https://github.com/ihar-kahadouski/custom-analyzer) written in java.
+Custom [analyzer](https://github.com/ihar-kahadouski/custom-analyzer) written in java using [Spring AMQP](https://spring.io/projects/spring-amqp).
