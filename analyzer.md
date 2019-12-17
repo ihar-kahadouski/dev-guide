@@ -4,7 +4,9 @@
 1. [Declaring exchange](#declaring-exchange)
 1. [Indexing](#indexing)
 1. [Analyze](#analyze)
-
+1. [Search logs](#search-logs)
+1. [Clean](#clean)
+1. [Delete](#delete)
 1. [Examples](#examples)
 
 ## Overview
@@ -35,7 +37,7 @@ Each analyzer has to declare 5 queues with names: `analyze`, `search`, `index`, 
 
 Index request can be used to store info about logs and then analysis will be proceed based on the info.
 
-Index request structure:
+Index request structure from `API`:
 
 IndexLaunch:
 
@@ -140,6 +142,46 @@ AnalyzedItemRs:
 
 ## Search logs
 
+Search request can be used to find similar logs from test items with `to_investigate` type.
+
+Search logs request from `API`:
+
+SearchRq:
+
+| Attribute         | Description                                             | Example                             |
+|-------------------|---------------------------------------------------------|-------------------------------------|
+| launchId          | Id of launch                                            | 111                                 |
+| launchName        | Name of launch                                          | Smoke Test                          |
+| itemId            | Id of test item                                         | 112                                 |
+| projectId         | Id of project                                           | 10                                  |
+| filteredLaunchIds | Array of launch ids, among with search would be applied | [1,2,3]                             |
+| logMessages       | Array of log messages looking for                       | ["first message", "second message"] |
+| logLines          | Number of logs lines that will be used in comparison    | 5                                   |
+
+Analyzer should return array of log ids that matches as a response.
+
+## Clean
+
+Clean request can be used to remove stored log from index.
+
+Clean logs request from `API`:
+
+CleanIndexRq:
+
+| Attribute | Description                     | Example         |
+|-----------|---------------------------------|-----------------|
+| project   | Id of project                   | 10              |
+| ids       | Array of log ids to be removed  | [111, 122, 123] |
+
+Analyzer do not send response on the request.
+
+## Delete 
+
+Delete request can be used to delete entire index.
+
+Request message from `API` contains only id of index.
+
+Analyzer do not send response on the request.
 
 ## Examples
 
