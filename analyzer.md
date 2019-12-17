@@ -31,9 +31,9 @@ Each analyzer has to declare 5 queues with names: `analyze`, `search`, `index`, 
 
 ## Indexing
 
-Index request is used to store info about logs and then analysis will be proceed based on the info.
+Index request can be used to store info about logs and then analysis will be proceed based on the info.
 
-Index request:
+Index request structure:
 
 IndexLaunch:
 
@@ -75,53 +75,65 @@ IndexLog:
 | logLevel  | Log level    | 40000                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | message   | Log message  | java.lang.AssertionError: 1 expectation failed. Expected status code <200> but was <400>.  	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method) 	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62) 	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45) 	at java.lang.reflect.Constructor.newInstance(Constructor.java:423) |
 
+`API` send array of IndexLaunch entities that have to be indexed.
+
 Example in json :
 
 ```json
-{
-  "launchId": 110,
-  "launchName": "Smoke Test",
-  "project": 11,
-  "analyzerConfig": {
-    "minDocFreq": 1,
-    "minTermFreq": 1,
-    "minShouldMatch": 95,
-    "numberOfLogLines": -1,
-    "isAutoAnalyzerEnabled": true,
-    "analyzerMode": "all",
-    "indexingRunning": false
-  }, 
-  "testItems": [
-    {
-      "testItemId": 101,
-      "issueType": "pb001",
-      "uniqueId": "auto:c6edafc24a03c6f69b6ec070d1fd0089",
-      "isAutoAnalyzed": false,
-      "logs": [
-        {
-          "logId": 111,
-          "logLevel": 40000,
-          "message": "java.lang.AssertionError: 1 expectation failed. Expected status code <200> but was <400>."
-        },
-        {
-          "logId": 112,
-          "logLevel": 40000,
-          "message": "java.lang.AssertionError: 1 expectation failed. Expected status code <200> but was <500>."
-        }      
-      ] 
-    }
-  ]
-}
+[
+   {
+      "launchId":110,
+      "launchName":"Smoke Test",
+      "project":11,
+      "analyzerConfig":{
+         "minDocFreq":1,
+         "minTermFreq":1,
+         "minShouldMatch":95,
+         "numberOfLogLines":-1,
+         "isAutoAnalyzerEnabled":true,
+         "analyzerMode":"all",
+         "indexingRunning":false
+      },
+      "testItems":[
+         {
+            "testItemId":101,
+            "issueType":"pb001",
+            "uniqueId":"auto:c6edafc24a03c6f69b6ec070d1fd0089",
+            "isAutoAnalyzed":false,
+            "logs":[
+               {
+                  "logId":111,
+                  "logLevel":40000,
+                  "message":"java.lang.AssertionError: 1 expectation failed. Expected status code <200> but was <400>."
+               },
+               {
+                  "logId":112,
+                  "logLevel":40000,
+                  "message":"java.lang.AssertionError: 1 expectation failed. Expected status code <200> but was <500>."
+               }
+            ]
+         }
+      ]
+   }
+]
 ```
 
 Analyzer should return response with number of indexed logs.
 
-##Analyze
+## Analyze
 
+Analyze request can be used to find matches from request in indexed data.
 
+Analyze request is the same as IndexLaunch entity used for indexing. It contains info about test items and logs thad have to be analyzed.
 
+Response from analyzer should contain array of the following entities (info about analyzed test items):
 
+AnalyzedItemRs:
 
+| Attribute      | Description              | Example |
+|----------------|--------------------------|---------|
+| itemId         | Id of analyzed test item | 111     |
+| relevantItemId | Id of relevant test item | 123     |
+| issueType      | Issue type locator       | pb001   |
 
-
-
+## Search logs
