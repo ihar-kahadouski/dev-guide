@@ -35,7 +35,7 @@ Each analyzer has to declare 5 queues with names: `analyze`, `search`, `index`, 
 
 ## Indexing
 
-Index request can be used to store info about logs and then analysis will be proceed based on the info.
+Index request can be used to store info about logs and then analysis will be proceed based on the info. Requests and responses use `index` queue. 
 
 Index request structure from `API`:
 
@@ -126,7 +126,7 @@ Analyzer should return response with number of indexed logs.
 
 ## Analyze
 
-Analyze request can be used to find matches from request in indexed data.
+Analyze request can be used to find matches from request in indexed data. Requests and responses use `analyze` queue. 
 
 Analyze request is the same as IndexLaunch entity used for indexing. It contains info about test items and logs thad have to be analyzed.
 
@@ -142,7 +142,7 @@ AnalyzedItemRs:
 
 ## Search logs
 
-Search request can be used to find similar logs from test items with `to_investigate` type.
+Search request can be used to find similar logs from test items with `to_investigate` type. Requests and responses use `search` queue. 
 
 Search logs request from `API`:
 
@@ -162,7 +162,7 @@ Analyzer should return array of log ids that matches as a response.
 
 ## Clean
 
-Clean request can be used to remove stored log from index.
+Clean request can be used to remove stored log from index. Requests use `clean` queue. 
 
 Clean logs request from `API`:
 
@@ -177,7 +177,7 @@ Analyzer do not send response on the request.
 
 ## Delete 
 
-Delete request can be used to delete entire index.
+Delete request can be used to delete entire index. Requests use `delete` queue. 
 
 Request message from `API` contains only id of index.
 
