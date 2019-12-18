@@ -1,6 +1,7 @@
 # Reporting developers guide
 
 1. [Preconditions](#preconditions)
+1. [Retrieving api token](#retrieving-api-token)
 1. [Start launch](#start-launch)
 1. [Start root(suite) item](#start-rootsuite-item)
 1. [Start child(container) item](#start-childcontainer-item)
@@ -44,7 +45,9 @@ Steps 2-4 should execute for each test item in structure.
 
 Let's assume that our Report Portal instance deployed at `http://rp.com`. And our project name is `rp_project`.
 
-Also we need token to get access to API. There are two ways to retrieve it:
+Also we need token to get access to API. There are two ways to retrieve it.
+
+## Retrieving api token
 
 #### Using UI
 
