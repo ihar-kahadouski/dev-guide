@@ -3,20 +3,22 @@
 source auth_client.sh
 source launch_client.sh
 source item_client.sh
+source log_client.sh
 
 HOST=$1
 USERNAME=$2
 PASSWORD=$3
 PROJECT=$4
 
-START_LAUNCH_BODY_PATH=./json/start-launch.json
-START_SUITE_BODY_PATH=./json/start-suite.json
-START_TEST_BODY_PATH=./json/start-test.json
-START_STEP_BODY_PATH=./json/start-step.json
-FINISH_STEP_BODY_PATH=./json/finish-step.json
-FINISH_TEST_BODY_PATH=./json/finish-test.json
-FINISH_SUITE_BODY_PATH=./json/finish-suite.json
-FINISH_LAUNCH_BODY_PATH=./json/finish-launch.json
+START_LAUNCH_BODY_PATH=./json/1-start-launch.json
+START_SUITE_BODY_PATH=./json/2-start-suite.json
+START_TEST_BODY_PATH=./json/3-start-test.json
+START_STEP_BODY_PATH=./json/4-start-step.json
+LOGS_JSON_REQUEST_PATH=./json/5-logs-json-request.json
+FINISH_STEP_BODY_PATH=./json/6-finish-step.json
+FINISH_TEST_BODY_PATH=./json/7-finish-test.json
+FINISH_SUITE_BODY_PATH=./json/8-finish-suite.json
+FINISH_LAUNCH_BODY_PATH=./json/9-finish-launch.json
 
 UI_TOKEN=$(get_ui_token ${HOST} ${USERNAME} ${PASSWORD})
 
@@ -33,6 +35,8 @@ echo "Test - $TEST_UUID"
 
 STEP_UUID=$(start_child_item ${HOST} ${PROJECT} ${API_TOKEN} ${LAUNCH_UUID} ${TEST_UUID} ${START_STEP_BODY_PATH})
 echo "Step - $STEP_UUID"
+
+save_logs_with_attachments ${HOST} ${PROJECT} ${API_TOKEN} ${LAUNCH_UUID} ${STEP_UUID} ${LOGS_JSON_REQUEST_PATH}
 
 finish_item ${HOST} ${PROJECT} ${API_TOKEN} ${STEP_UUID} ${FINISH_STEP_BODY_PATH}
 
